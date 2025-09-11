@@ -4,8 +4,9 @@ const port = 8080
 const bcrypt = require('bcrypt'); // hashes password or encrypts or decrypts password
 app.use(express.json()) // middleware
 const db_conn = require('./db_connection')
-const {getToken,setToken} = require('./utils/token')
-
+const {getToken,setToken,verifyToken} = require('./utils/token')
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
 const Item = require('./models/item.schema')
 const User = require('./models/user.schema');
 const e = require('express');
@@ -17,9 +18,18 @@ const e = require('express');
 // Add Item
 app.post('/api/v1/addItem', async (req, res) => {
     try {
-        const item = new Item(req.body);
-        const savedItem = await item.save(); // to add item to DB save the call
-        res.status(201).json(savedItem);  // return the saved document
+        let savedItems;
+
+        if (Array.isArray(req.body)) {
+            // If it's an array, insertMany
+            savedItems = await Item.insertMany(req.body);
+        } else {
+            // If it's a single object
+            const item = new Item(req.body);
+            savedItems = await item.save();
+        }
+
+        res.status(201).json(savedItems);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -28,7 +38,7 @@ app.post('/api/v1/addItem', async (req, res) => {
 // Get All Items
 app.get('/api/v1/getAllItems', async (req, res) => {
     try {
-        const ItemData = await Item.findByIdAndDelete("68c0e9fc51b673b6421dde5a");  //  Get all items
+        const ItemData = await Item.find();  //  Get all items
         res.status(200).json(ItemData);        // send JSON
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -61,6 +71,17 @@ app.get('/api/v1/getAllUsers', async(req,res)=>{
         res.status(200).json(users);
     }catch(err){
         res.status(400).json({ error: err.message });
+    }
+})
+
+// GET items by category
+app.get('/api/v1/getItems/:category',verifyToken,async(req,res)=>{
+    try{
+        const category = req?.params?.category
+        const items = await Item.find({category:category})
+        res.status(200).send(items)
+    }catch(err){
+         res.status(400).send(err.message)
     }
 })
 
