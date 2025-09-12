@@ -36,6 +36,12 @@ const userSchema = new mongoose.Schema(
       minlength: [6, "Password must be at least 6 characters long"],
       maxlength: [100, "Password cannot exceed 100 characters"],
     },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+      required: true,
+    },
   },
   { timestamps: true } // adds createdAt & updatedAt
 );
