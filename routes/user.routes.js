@@ -2,7 +2,8 @@ const express = require('express');
 const userRouter = express.Router()
 const bcrypt = require('bcrypt');
 const User = require('../models/user.schema');
-const {setToken , getToken , verifyToken} = require('../utils/token')
+const {setToken , getToken , verifyToken} = require('../utils/token');
+const { successResponse , errorResponse} = require('../utils/responseMapper');
 
 userRouter.post('/api/v1/addUser', async (req, res) => {
     const { FirstName, LastName, phoneNumber, Email, Password, role } = req.body;  // object destructure
@@ -51,10 +52,10 @@ userRouter.post('/api/v1/userLogin', async (req, res) => {
         // Remove password from response
         const userResponse = user.toObject();
         delete userResponse.Password;
-        res.status(200).send(userResponse)
+        res.status(200).send(successResponse(userResponse))
 
     } catch (err) {
-        res.status(500).send(err.message)
+        res.status(500).send(errorResponse(err))
     }
 })
 

@@ -21,7 +21,7 @@ itemRouter.post('/api/v1/addItem', verifyToken,isAdmin, async (req, res) => {
             savedItems = await item.save();
         }
 
-        res.status(201).json(savedItems);
+        res.status(201).json(successResponse(savedItems));
     } catch (err) {
         res.status(400).json(errorResponse(err));
     }
